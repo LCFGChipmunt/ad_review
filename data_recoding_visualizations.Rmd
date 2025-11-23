@@ -1,0 +1,1230 @@
+---
+title: "Atopic Dermatitis Review Project"
+output: html_document
+date: "2025-11-23"
+---
+
+## R Script for Data Recoding and Visualizations
+
+### Download data
+read in data
+```{r}
+studies_415 = read.csv("studies_415.csv",header=T,stringsAsFactors = T)
+```
+
+sort by alphabetical order
+```{r}
+studies_415 <- studies_415[order(studies_415$Name.of.PDF.file), ]
+```
+
+### Data cleaning and recoding
+Rename columns
+```{r}
+studies_415_cleaned = studies_415
+colnames(studies_415_cleaned) = c("PDF_file", "Study_title", "Publication_year", "Country", "Study_design", "Sample_size",
+                                  "Ages", "Sequencing_methods", "Sequencing_platforms", "Statistical_methods", "Comparison_type",
+                                  "Biomarker_name", "Biomarker_type", "Biomarker_site", "Relationship", "Effect_size")
+```
+
+Country
+```{r}
+library(dplyr)
+library(stringr)
+# Define a named vector for recoding
+country_replacements <- c("USA" = "United States",
+                          "South Korea" = "Korea",
+                          "Republic of Korea" = "Korea")
+
+# Recode country names
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Country = str_replace_all(Country, country_replacements))
+
+table(studies_415_cleaned$Country)
+```
+
+Study design
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+study_design_replacements <- c( "Birth cohort" = "Cohort",
+                                "Birth cohort study" = "Cohort",
+                                "Cohort study" = "Cohort",
+                                "Longitudinal cohort" = "Cohort",
+                                "Longitudinal" = "Cohort",
+                                "Longitudinal epidemiological study" = "Cohort",
+                                "Prospective cohort" = "Cohort",
+                                "Prospective cohort study" = "Cohort",
+                                "Prospective birth cohort" = "Cohort",
+                                "Retrospective cohort" = "Cohort",
+                       
+                                "Cohort (nested case-control)" = "Case-control",
+                                "Nested case-control" = "Case-control",
+                                "Case-control study" = "Case-control",
+                                "Nested case-control study" = "Case-control",
+                                "Prospective case-control" = "Case-control",
+                                "Case-control, Family-based" = "Case-control",
+                                
+                                "Cross-sectional study" = "Cross-sectional",
+                                
+                                "Case series" = "Others",
+                                "Family-based genetic association study" = "Others",
+                                "Genetic association study" = "Others",
+                                "Family-based" = "Others",
+                                "Not specified" = "Others",
+                                "Observational" = "Others",
+                                "Observational prospective study" = "Others",
+                                "Observational prospective" = "Others",
+                                "Pilot study" = "Others",
+                                "Prospective hospital-based" = "Others",
+                                "Retrospective" = "Others"
+                                )
+
+# Recode study design names
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Study_design = recode(Study_design, !!!study_design_replacements))
+
+table(studies_415_cleaned$Study_design)
+```
+
+Statistical methods
+```{r}
+library(dplyr)
+library(stringr)
+# Define a named vector for recoding
+methods_replacements <- c("Analysis of variance" = "ANOVA",
+                                "Backward stepwise linear regression" = "Linear regression",
+                                
+                                "Chi-Square test" = "Chi-square test",
+                                "Chi-square tests" = "Chi-square test",
+                                "Chi-squared test" = "Chi-square test",
+                                "Conditional logistic regression" = "Logistic regression",
+                                "correlation analysis" = "Correlation analysis",
+                                "Cox proportional-hazard models" = "Cox regression",
+                                "Cox proportional-hazards regression" = "Cox regression",
+                                "Cox proportional hazards regression" = "Cox regression",
+                                "Cumulative logistic regression" = "Logistic regression",
+                                
+                                "Fisher exact test" = "Fisher's exact test",
+                                "Fisher’s exact test" = "Fisher's exact test",
+                                "Fishers exact test" = "Fisher's exact test",
+      
+                                "Kruskal-Wallis ANOVA" = "Kruskal-Wallis test",
+                                "Kruskal-Wallis H-test" = "Kruskal-Wallis test",
+                                "Kruskal-Wallis H test" = "Kruskal-Wallis test",
+                                "Kruskalâ€“Wallis test" = "Kruskal-Wallis test",
+                                
+                                "linear regression" = "Linear regression",
+                                
+                                "Mann-Whitney rank sum test" = "Mann-Whitney U test",
+                                "Mann-Whitney test" = "Mann-Whitney U test",
+                                "Mann-Whitney U-test" = "Mann-Whitney U test",
+                                "Mann‚ÄìWhitney U-test" = "Mann-Whitney U test",
+                                "Mannâ€“Whitney U-test" = "Mann-Whitney U test",
+                                "Mannâ€“Whitney U test" = "Mann-Whitney U test",
+                                
+                                "Multinomial logistic regression" = "Logistic regression",
+                                "Multiple linear regression" = "Linear regression",
+                                "Multiple logistic regression" = "Logistic regression",
+                                "Multivariable linear regression" = "Linear regression",
+                                "Multivariable logistic regression" = "Logistic regression",
+                                "Multivariate linear regression" = "Linear regression",
+                                "Multivariate logistic regression" = "Logistic regression",
+                                
+                                "Odds Ratio" = "Odds ratio",
+                                "Odds ratio analysis" = "Odds ratio",
+                                "Odds ratio calculation" = "Odds ratio",
+                                "Odds ratios" = "Odds ratio",
+                                
+                                "one-way ANOVA" = "ANOVA",
+                                "One-way ANOVA" = "ANOVA",
+                                "One-Way ANOVA" = "ANOVA",
+                                
+                                "Pearson's Chi-square" = "Pearson's chi-square test",
+                                "Pearson's chi-squared test" = "Pearson's chi-square test",
+                                "Pearson chi-square test" = "Pearson's chi-square test",
+                                "Pearson Chi-square test" = "Pearson's chi-square test",
+                                "Pearsons Chi-squared test" = "Pearson's chi-square test",
+                                
+                                "Spearman's rank correlation" = "Spearman's correlation",
+                                "Spearman correlation" = "Spearman's correlation",
+                                "Spearman rank correlation" = "Spearman's correlation",
+                                "Spearman rank order correlation" = "Spearman's correlation",
+                                "Spearman’s correlation" = "Spearman's correlation",
+                                "Spearmans correlation" = "Spearman's correlation",
+                                
+                                "Student’s t-test" = "t-test",
+                                "Students t-test" = "t-test",
+                                "Student's t-test" = "t-test",
+                                "Student's t-test" = "t-test",
+                                "T-test" = "t-test",
+                                "t-tests" = "t-test",
+                                "Two-tailed t-test" = "t-test",
+                                "Unpaired t-test" = "t-test",
+                                
+                                "Wilcoxon-Mann-Whitney test" = "Mann-Whitney U test",
+                                "Wilcoxon Mann-Whitney test" = "Mann-Whitney U test",
+                                "Wilcoxon rank-sum test" = "Mann-Whitney U test",
+                                "Wilcoxon Rank-Sum Test" = "Mann-Whitney U test",
+                                "Wilcoxon rank sum test" = "Mann-Whitney U test",
+                                "Wilcoxonâ€“Mannâ€“Whitney test" = "Mann-Whitney U test",
+                                "Wilcoxon-Mann-Whitney U test" = "Mann-Whitney U test",
+                                "Wilcoxon Mann-Whitney U test" = "Mann-Whitney U test"
+                                )
+
+# Recode methods names
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Statistical_methods = str_replace_all(Statistical_methods, methods_replacements))
+
+table(studies_415_cleaned$Statistical_methods)
+```
+
+Sequencing methods
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+seq_methods_replacements <- c(  "16S-rRNA sequencing" = "16S rRNA sequencing",
+                                "16S ribosomal RNA gene sequencing" = "16S rRNA sequencing",
+                                "16S rRNA amplicon sequencing" = "16S rRNA sequencing",
+                                "16S rRNA gene sequencing" = "16S rRNA sequencing",
+                                "Amplicon sequencing (16S rRNA)" = "16S rRNA sequencing",
+                                
+                                "Enzyme-linked immunosorbent assay" = "ELISA",
+                                "Genotyping (PCR-RFLP, TaqMan-based allelic discrimination assay)" = "Genotyping",
+                                "Genotyping (PCR-RFLP)" = "Genotyping",
+                                "Genotyping (PCR)" = "Genotyping",
+                                
+                                "qRT-PCR" = "PCR",
+                                "Quantitative PCR" = "PCR",
+                                "Quantitative polymerase chain reaction" = "PCR",
+                                "Quantitative polymerase chain reaction, Enzyme-linked immunosorbent assay" = "PCR, ELISA",
+                                "Real-time PCR" = "PCR",
+                                "Real-time polymerase chain reaction" = "PCR",
+                                "RT-PCR" = "PCR",
+                                "Multiplex PCR, Next-generation sequencing" = "PCR, Next-generation sequencing",
+                                "PCR for bacterial gene detection" = "PCR",
+
+                                "FLG genotyping" = "Genotyping",
+                                "SNP genotyping" = "Genotyping",
+                                "Whole-metagenome sequencing" = "Whole metagenome sequencing"
+                                )
+
+# Recode seq methods names
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Sequencing_methods = recode(Sequencing_methods, !!!seq_methods_replacements))
+
+table(studies_415_cleaned$Sequencing_methods)
+```
+
+Sequencing platforms
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+seq_platforms_replacements <- c("Illumina HiSeq 2000" = "Illumina HiSeq",
+                                "Illumina HiSeq 2500" = "Illumina HiSeq",
+                                "Illumina HiSeq 2500 and HiSeq X Ten" = "Illumina HiSeq",
+                                "Illumina HiSeq 4000" = "Illumina HiSeq",
+                                "Illumina HiSeq X" = "Illumina HiSeq",
+                                "Illumina Hiseq2000" = "Illumina HiSeq",
+                                "Illumina HiSeq2500" = "Illumina HiSeq",
+                                
+                                "Illumina NextSeq 2000" = "Illumina NextSeq",
+                                "MALDI-TOF spectrometry" = "MALDI-TOF mass spectrometry",
+                                "Polymerase Chain Reaction (PCR)" = "PCR",
+                                "PCR amplification" = "PCR",
+                                "TaqMan allelic discrimination" = "TaqMan assay",
+                                "TaqMan allelic discrimination, MALDI-TOF spectrometry" = "TaqMan assay, MALDI-TOF spectrometry",
+                                "Taqman allelic discrimination assay" = "TaqMan assay",
+                                "TAQMAN-based allelic discrimination assay, DNA sequencing" = "TaqMan assay, DNA sequencing",
+                                "TaqMan-based allelic discrimination assay" = "TaqMan assay",
+                                "TaqMan-based allelic discrimination assay, Applied Biosystems sequencing" = "TaqMan assay, Applied Biosystems sequencing",
+                                "TaqMan assay (ABI)" = "TaqMan assay",
+                                "TaqMan genotyping assays" = "TaqMan assay",
+                                "AmpliSeq transcriptomic analysis" = "AmpliSeq",
+                                "454 pyrosequencing" = "Pyrosequencing",
+                                "Liquid chromatography electrospray ionization tandem mass spectrometry, Meso Scale Discovery U-Plex assay" = "Liquid chromatography-mass spectrometry, Meso Scale Discovery U-Plex assay",
+                                "Liquid chromatography-tandem mass spectrometry (LC-MS/MS)" = "Liquid chromatography-mass spectrometry",
+                                "SCIEX-AD ultraperformance liquid chromatography with AB SCIEX X500B QTOF" = "Liquid chromatography-mass spectrometry"
+                                )
+
+# Recode seq platforms names
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Sequencing_platforms = recode(Sequencing_platforms, !!!seq_platforms_replacements))
+
+table(studies_415_cleaned$Sequencing_platforms)
+```
+
+Type of biomarkers
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+biomarker_type_replacements <- c("Clinical" = "Others",
+                                "Environmental" = "Others",
+                                "Environmental exposure" = "Others",
+                                "Exposome" = "Others",
+                                "Exposure biomarker" = "Others",
+                                "Lipidome" = "Metabolome",
+                                "Lipidomics" = "Metabolome",
+                                "Physiological" = "Others",
+                                "Epigenome" = "Others")
+
+# Recode seq platforms names
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_type = recode(Biomarker_type, !!!biomarker_type_replacements))
+
+table(studies_415_cleaned$Biomarker_type)
+```
+
+Site of biomarkers
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+biomarker_site_replacements <- c("Blood (serum)" = "Blood",
+                                 "Cord blood" = "Blood",
+                                "Blood (Umbilical cord)" = "Blood",
+                                "Child's blood at 24 months" = "Blood",
+                                "Maternal serum" = "Blood",
+                                "Peripheral blood" = "Blood",
+                                "Serum" = "Blood",
+                                "Umbilical cord blood" = "Blood",
+                                "Cord blood, Blood" = "Blood",
+                                "Cord blood, Maternal blood" = "Blood",
+                                "Cord blood, Peripheral blood" = "Blood",
+                                "Maternal blood" = "Blood",
+                                "Maternal blood, Cord blood" = "Blood",
+                                "Maternal blood, Cord blood, Child's blood at 24 months" = "Blood",
+                                "Maternal serum, Umbilical cord blood" = "Blood",
+                                
+                                "Skin, Feces, Milk" = "Skin, Stool, Breast milk",
+                                "Skin (anterior forearms)" = "Skin",
+                                "Skin (Patch test)" = "Skin",
+                                "Skin (stratum corneum)" = "Skin",
+                                "Skin (tape strips)" = "Skin",
+                                "Skin (Tape strips)" = "Skin",
+                                "Skin biopsies" = "Skin",
+                                "Skin biopsy" = "Skin",
+                                "Lesional skin" = "Skin",
+                                "Non-lesional skin" = "Skin",
+                                "Skin and nares" = "Skin, Nasal",
+                                "Nose, Lesional skin, Non-lesional skin" = "Nasal, Skin",
+                                "Nose, Skin" = "Nasal, Skin",
+                                
+                                "Feces" = "Stool",
+                                "Gut (faecal samples)" = "Stool",
+                                "Gut (fecal samples)" = "Stool",
+                                "Stools" = "Stool",
+                                "Maternal stools" = "Stool",
+                                
+                                "Colostrum" = "Breast milk",
+                                "Milk" = "Breast milk",
+                                "Serum, Breast milk" = "Blood, Breast milk",
+                                "Skin, Nasal swabs" = "Skin, Nasal",
+                                "Maternal urine" = "Urine",
+                                
+                                "Cheek cells" = "Others",
+                                "Buccal swab" = "Others",
+                                "Oral epithelial cells" = "Others",
+                                "Nasal and intestinal samples" = "Nasal, Others",
+                                "Nasal swabs" = "Nasal",
+                                "Maternal diet" = "Others",
+                                "Not applicable" = "Not specified")
+
+# Recode seq platforms names
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_site = recode(Biomarker_site, !!!biomarker_site_replacements))
+
+table(studies_415_cleaned$Biomarker_site)
+```
+
+## create another column for the original uncleaned biomarkers
+```{r}
+studies_415_cleaned$Biomarker_name_1 = studies_415_cleaned$Biomarker_name
+```
+
+## break down values where there is more than one biomarker name in same row
+```{r}
+library(tidyr)
+library(dplyr)
+
+# Step 1: Separate comma-separated biomarkers into multiple rows
+studies_415_cleaned <- studies_415_cleaned %>%
+  separate_rows(Biomarker_name, sep = ",\\s*")
+
+# Step 2: Trim whitespace
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_name = trimws(Biomarker_name))
+```
+
+Immunome
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+immunome_replacements <- c("Absolute eosinophil count (AEC)" = "Eosinophil",
+                           "Blood eosinophil count" = "Eosinophil",
+                           "Blood eosinophil percentage" = "Eosinophil",
+                           "Absolute eosinophil count" = "Eosinophil",
+                           "Eosinophil count" = "Eosinophil",
+                           "Cord blood eosinophil count" = "Eosinophil",
+                           "Blood eosinophils" = "Eosinophil",
+                           
+                           "ECP" = "Eosinophil cationic protein (ECP)",
+                           "Eosinophil cationic protein" = "Eosinophil cationic protein (ECP)",
+                           "Eosinophil Major Basic Protein (higher in AD group)" = "Eosinophil major basic protein",
+                           "Eosinophil protein X" = "Eosinophil protein X (EPX)",
+  
+                           "Serum Eosinophil Cationic Protein (ECP)" = "Eosinophil cationic protein (ECP)",
+                           "Serum eosinophil cationic protein (ECP)" = "Eosinophil cationic protein (ECP)",
+                           "Serum eosinophil cationic protein (s-ECP)" = "Eosinophil cationic protein (ECP)",
+                           
+                           "Eosinophil Major Basic Protein" = "Eosinophil major basic protein",
+                           "Urinary eosinophil protein X (u-EPX)" = "Eosinophil protein X (EPX)",
+
+                           "Serum MDC" = "Macrophage-derived chemokine",
+                           "Serum tryptase" = "Tryptase",
+                           "Serum Zinc" = "Zinc",
+                           
+                           "CCL17 (TARC)" = "CCL17",
+                           "CCL17 (Thymus and activation-regulated chemokine)" = "CCL17",
+                           "TARC (CCL17)" = "CCL17",
+                           "TARC/CCL17" = "CCL17",
+                           "TARC" = "CCL17",
+                           "TARC (Thymus and activation regulated chemokine)" = "CCL17",
+                           "Thymus and activation-regulated chemokine (TARC)" = "CCL17",
+                           "Thymus and Activation-Regulated Chemokine (TARC)" = "CCL17",
+                           "Serum TARC" = "CCL17",
+                           "Serum CCL17" = "CCL17",
+                           "Thymus and activation-regulated chemokine (TARC/CCL17)" = "CCL17",
+                           
+                           "CCL22 (MDC)" = "CCL22",
+                           
+                           "Serum CCL27" = "CCL27",
+                           "CTACK (CCL27)" = "CCL27",
+                           "Serum CTACK" = "CCL27",
+                           "CTACK" = "CCL27",
+                           "Thymus-expressed chemokine (TECK/CCL25)" = "CCL25",
+                           "Mucosa-associated epithelial chemokine (MEC/CCL28)" = "CCL28",
+                           
+                           "Food-specific IgE" = "IgE",
+                           "Cord-blood total IgE" = "IgE",
+                           "Cow's milk protein-specific IgE" = "IgE",
+                           "Cow's milk-specific IgE" = "IgE",
+                           "Egg white-specific IgE" = "IgE",
+                           "Food-specific IgE (Cow's milk)" = "IgE",
+                           "Food-specific IgE (Egg white)" = "IgE",
+                           "Hen's egg-specific IgE" = "IgE",
+                           "IgE to food proteins (milk" = "IgE",
+                           "Milk-specific IgE" = "IgE",
+                           "Specific IgE to cow's milk" = "IgE",
+                           "Specific IgE to food allergens (Egg" = "IgE",
+                           "Tree nuts-specific IgE" = "IgE",
+                           "Cockroach antigen IgE" = "IgE",
+                           "Staphylococcal enterotoxin-specific IgE (SEA)"= "IgE",
+                           "Staphylococcal enterotoxin-specific IgE (SED)"= "IgE",
+                           "Staphylococcal enterotoxin A (SEA)-specific IgE"= "IgE",
+                           "Staphylococcal enterotoxin B (SEB)-specific IgE"= "IgE",
+                           "IgE antibodies to SEA and SEB" = "IgE",
+                           "IgE to cat allergens (Fel d 1" = "IgE",
+                           "House dust mite IgE" = "IgE",
+                           "IgE to house dust mite" = "IgE",
+                           "HDM-specific IgE" = "IgE",
+                           "IgE antibodies" = "IgE",
+                           "IgE serum levels" = "IgE",
+                           "Serum IgE" = "IgE",
+                           "Serum total IgE" = "IgE",
+                           "Serum Total IgE" = "IgE",
+                           "sIgE" = "IgE",
+                           "Total IgE" = "IgE",
+                           "Total IgE levels" = "IgE",
+                           "Specific IgE" = "IgE",
+                           "Specific IgE for food and inhalant allergens" = "IgE",
+                           "Specific IgE to aeroallergens (House dust mite" = "IgE",
+                           "Specific IgE to allergens" = "IgE",
+                           "Specific IgE to Dermatophagoides farinae" = "IgE",
+                           "Specific IgE to pollen (alder" = "IgE",
+                           "Specific IgE" = "IgE",
+                           "Total immunoglobulin E (IgE)" = "IgE",
+                           "Total Immunoglobulin E (IgE) (higher in AD group)" = "IgE",
+                           "Total immunoglobulin E (tIgE)" = "IgE",
+                           "Total serum IgE" = "IgE",
+                           "Total serum IgE levels (higher in IgE-associated AD)" = "IgE",
+                           "Maternal prenatal IgE" = "IgE",
+                           "Cord blood IgE" = "IgE",
+                           "Anti-staphylococcal enterotoxin B IgE" = "IgE",
+                           "Cat dander-specific IgE"= "IgE",
+                           "Dermatophagoides pteronyssinus (Der p 1) IgE" = "IgE",
+                           "House dust mite-specific IgE" = "IgE",
+                           "Japanese cedar IgE"= "IgE",
+                           "Malassezia-specific IgE" = "IgE",
+                           "Malassezia spp.-specific IgE" = "IgE",
+                           
+                           "Serum IgM" = "IgM",
+                           "Serum IgA" = "IgA",
+                           "IgA levels" = "IgA",
+                           "Soluble IgA" = "IgA",
+                           "Anticardiolipin IgG antibodies (higher in extrinsic AD)" = "IgG",
+                           "IgG against Staphylococcus aureus antigens" = "IgG",
+                           "IgG levels" = "IgG",
+                           
+                           "TGF-Œ≤ (Treg cytokine)" = "TGF",
+
+                           "Soluble CD30 (sCD30) in serum" = "Soluble CD30",
+                           "Soluble CD30 (sCD30)" = "Soluble CD30",
+                           "Soluble CD14 (sCD14)" = "Soluble CD14",
+                           "Soluble CD14 (sCD14) in colostrum" = "Soluble CD14",
+                           "Soluble CD14 (sCD14) in mature milk" = "Soluble CD14",
+                           "Soluble CD25 (sCD25)" = "Soluble CD25",
+                           
+                           "IL-13-producing cells in breast milk" = "IL-13-producing cells",
+                           
+                           "B-cell subsets" = "B cell",
+
+                           "Interferon-gamma (IFN-Î³)" = "Interferon",
+                           "Interferon-gamma (IFN-Œ≥)" = "Interferon",
+                           
+                           "IFN-Œ≥" = "Interferon",
+                           "IFN-Î³" = "Interferon",
+                           "IFN-Œ≥ (CD4+ and CD8+ T cells)" = "Interferon",
+                           
+                           "TNF-Œ±" = "TNF",
+                           "TNF-alpha" = "TNF",
+                           "TNF-Î±" = "TNF",
+                           "TNF-Œ± (CD3+ T cells)" = "TNF",
+                           "TNF-Œ± (Th1 cytokine)" = "TNF",
+                           
+                           "Serum Interleukin-16 (IL-16)" = "IL-16",
+                           "Interleukin-5 (IL-5)" = "IL-5",
+                           "IL-17A" = "IL-17",
+                           "IL-17A/F" = "IL-17",
+                           "Interleukin-17 (IL-17)" = "IL-17",
+                           "Interleukin-17F (IL-17F)" = "IL-17",
+                           "IL-18 (APC cytokine)" = "IL-18",
+                           "IL-4 (CD4+ T cells)" = "IL-4",
+                           "Interleukin-10 (IL-10)" = "IL-10",
+                           "Interleukin 10 (IL-10)" = "IL-10",
+                           "Cord blood interleukin-10" = "IL-10",
+                           "Interleukin-13" = "IL-13",
+                           "Interleukin-18 (IL-18)" = "IL-18",
+                           "Serum IL-18" = "IL-18",
+                           "Interleukin-13 (IL-13)" = "IL-13",
+                           "Interleukin-31" = "IL-31",
+                           "Interleukin-31 (IL-31)" = "IL-31",
+                           "Interleukin 31 (IL-31)" = "IL-31",
+                           "Interleukin-33 (IL-33)" = "IL-33",
+                           "Interleukin 16 (IL-16)" = "IL-16",
+                           "Interleukin-12 (IL-12)" = "IL-12",
+                           "Total IL-12" = "IL-12",
+                           "Interleukin-21 (IL-21)" = "IL-21",
+                           "Interleukin-23 (IL-23)" = "IL-23",
+                           "Interleukin-9 (IL-9)" = "IL-9",
+                           "IL-1β" = "IL-1 beta",
+                           
+                           "Macrophage inflammatory protein-1Î²" = "Macrophage inflammatory protein",
+                           
+                           "IFN-Œ≥-producing CD4+ T cells" = "T helper cells",
+                           "IL-4-producing CD4+ T cells" = "T helper cells",
+                           "Memory Treg cells" = "T regulatory cells",
+                           "Regulatory T cells (CD4+/CD25high/CD127low/FoxP3+)" = "T regulatory cells",
+                           "Th1/Th2 ratio" = "T helper cells",
+                           "Th22 cells" = "T helper cells",
+                           "CD4+IL-13+ T cells" = "T helper cells",
+                           "CLA+ TH2 T cells" = "T helper cells",
+                           "Th2 cells" = "T helper cells",
+                           "CTLA-4 and PD-1 expressing regulatory T cells" = "T regulatory cells",
+                           "Treg cells" = "T regulatory cells",
+                           
+                           "Serum 25-hydroxyvitamin D (25OHD3)" = "Vitamin D",
+                           "Serum 25-hydroxyvitamin D" = "Vitamin D",
+                           "Maternal 25-hydroxyvitamin D" = "Maternal Vitamin D",
+                           "Maternal 25-hydroxyvitamin D (25OHD3)" = "Maternal Vitamin D",
+                           "Serum Vitamin D" = "Vitamin D",
+                           
+                           "Histamine release" = "Histamine",
+                           
+                           "Cord blood mononuclear cell (CBMC) proliferative response" = "Cord blood mononuclear cell",
+                           
+                           "Milk" = "Irrelevant",
+                           "cereals" = "Irrelevant",
+                           "eggs" = "Irrelevant",
+                           "Animal dander" = "Irrelevant",
+                           "Aspergillus)" = "Irrelevant",
+                           "Cockroach" = "Irrelevant",
+                           "Corn)" = "Irrelevant",
+                           "Egg whites" = "Irrelevant",
+                           "Fel d 4)" = "Irrelevant",
+                           "Aspergillus)" = "Irrelevant",
+                           "Peanut)" = "Irrelevant",
+                           "Peanuts" = "Irrelevant",
+                           "Wheat" = "Irrelevant",
+                           "animal dander)" = "Irrelevant",
+                           "dust mites" = "Irrelevant",
+                           "egg)" = "Irrelevant",
+                           "hen's egg" = "Irrelevant",
+                           "mugwort)" = "Irrelevant",
+                           "peanut" = "Irrelevant",
+                           "potato" = "Irrelevant",
+                           "tomato" = "Irrelevant",
+                           "tree nuts" = "Irrelevant",
+                           "wheat" = "Irrelevant",
+                           "Carrot" = "Irrelevant",
+                           "Food allergens (cow's milk" = "Irrelevant",
+                           "IL-1Œ≤" = "Irrelevant",
+                           "Aeroallergens (pollen" = "Irrelevant",
+                           "etc.)" = "Irrelevant",
+                           "Delayed-type food allergens (Soy" = "Irrelevant",
+                           "Inhalant allergen sensitization" = "Irrelevant",
+                           "Dust mite sensitization (predicts allergic respiratory diseases)" = "Irrelevant",
+                           "Egg white sensitization" = "Irrelevant",
+                           "Food allergen sensitization" = "Irrelevant",
+                           "Food sensitization" = "Irrelevant",
+                           "Maternal Vitamin D intake" = "Irrelevant"
+)
+
+# Recode only rows where Biomarker_type is "Immunome"
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_name = case_when(
+    Biomarker_type == "Immunome" ~ recode(Biomarker_name, !!!immunome_replacements),
+    TRUE ~ Biomarker_name  # Keep the original value if Biomarker_type is not "Immunome"
+  ))
+
+# Update Biomarker_type to "Metabolome" where Biomarker_name is "Vitamin D"
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_type = if_else(Biomarker_name == "Vitamin D", "Metabolome", Biomarker_type))
+
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_type = if_else(Biomarker_name == "Maternal Vitamin D", "Metabolome", Biomarker_type))
+
+
+immunome_table <- studies_415_cleaned %>%
+  filter(Biomarker_type == "Immunome")
+
+immunome_table <- immunome_table %>%
+  count(Biomarker_name, sort = TRUE)
+
+immunome_table <- immunome_table %>%
+  filter(Biomarker_name != "Irrelevant")
+
+print(immunome_table)
+
+write.csv(immunome_table, "biomarker_tables/immunome_table.csv")
+```
+
+Genome
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+genome_replacements <- c("FLG mutation" = "FLG",
+                         "Filaggrin (FLG) mutations" = "FLG",
+                         "Filaggrin (FLG) null mutations" = "FLG",
+                         "FLG 2282del4" = "FLG 2282del4",
+                         "FLG mutations (various variants)" = "FLG",
+                         "Filaggrin R501X mutation" = "FLG R501X",
+                         "FLG R501X mutation" = "FLG R501X",
+                         "Filaggrin (FLG) R501X mutation" = "FLG R501X",
+                         "FLG 2282del4 mutation" = "FLG 2282del4",
+                         "FLG LoF variant (p.R2447X)" = "FLG R2447X",
+                         "Filaggrin (FLG) 3321delA mutation" = "FLG 3321delA",
+                         "FLG LoF variant (p.S3247X)" = "FLG S3247X",
+                         "Filaggrin (FLG) mutations (R501X and 2282del4)" = "FLG",
+                         "Filaggrin (FLG) mutations (R501X" = "FLG R501X",
+                         "2282del4)" = "FLG 2282del4",
+                         "FLG P478S variant" = "FLG P478S",
+                         "2282del4" = "FLG 2282del4",
+                         "R2447X" = "FLG R2447X",
+                         "S3247X)" = "FLG S3247X",
+                         "FLG null mutations (R501X" = "FLG R501X",
+                         "FLG mutations (c.2282del4" = "FLG 2282del4",
+                         "p.R501X" = "FLG R501X",
+                         "p.R2447X" = "FLG R2447X",
+                         "p.S3247X)" = "FLG S3247X",
+                         
+                         "Filaggrin (FLG) copy number variation" = "FLG",
+                         "FLG antisense transcripts (A_21_P0014075)" = "FLG A_21_P0014075",
+                         "FLG K4671X" = "FLG K4671X",
+                         "FLG LoF variant (p.S3101X)" = "FLG S3101X",
+                         "FLG LoF variant (S761fs)" = "FLG S761fs",
+                         
+                         "FLG LoF variants (R501X," = "FLG R501X",
+                         "R826X" = "FLG R826X",
+                         "S3101X" = "FLG S3101X",
+                         "S3316X" = "FLG S3316X",
+                         "c.488delG)" = "FLG 488delG",
+                         "FLG LoF variants (R501X" = "FLG R501X",
+                         "R826X)" = "FLG R826X",
+                         
+                         "FLG LoF variants (various)" = "FLG",
+                         "FLG mRNA (sense) transcripts (A_24_P51322)" = "FLG A_24_P51322",
+                         "FLG mutation P2238N" = "FLG P2238N",
+                         "FLG mutation R2239W" = "FLG R2239W",
+                         "FLG mutations (R501X" = "FLG R501X",
+                         "S1085CfsX36" = "FLG S1085CfsX36",
+                         "S3247X" = "FLG S3247X",
+                         
+                         "FLG null variants" = "FLG",
+                         "FLG rs41267154" = "FLG rs41267154",
+                         "FLG rs6587666" = "FLG rs6587666",
+                         "FLG rs66831674" = "FLG rs66831674",
+                         "FLG S761fs mutation" = "FLG S761fs",
+                         "FLG mutations" = "FLG",
+                         "Filaggrin (FLG) loss-of-function mutations" = "FLG",
+                         "FLG loss-of-function mutations" = "FLG",
+                         "FLG gene mutations" = "FLG",
+                         "FLG R501X and 2282del4 mutations" = "FLG",
+                         
+                         "rs11584340 variant" = "FLG rs11584340",
+                         "rs150957860 variant" = "FLG rs150957860",
+                         "rs183942200 variant" = "FLG rs183942200",
+                         
+                         "FLG2 mutation (X2392S)" = "FLG2 X2392S",
+                         "FLG2 mutations (S2377X" = "FLG2 S2377X",
+                         "H1249R" = "FLG2 H1249R",
+                         "Q2053del224)" = "FLG2 Q2053del224",
+                         
+                         "GSTM1 null mutation" = "GSTM1",
+                         "GSTP1 Ile/Ile genotype" = "GSTP1",
+                         "GSTT1-null genotype" = "GSTT1",
+                         
+                         "FOXP3 demethylation in Tregs" = "FOXP3",
+                         
+                         "TSLP rs2289278 CC genotype" = "TSLP rs2289278",
+                         "TSLP variant rs1898671" = "TSLP rs1898671",
+                        
+                         "IL6R_rs2228145" = "IL6R rs2228145",
+                         
+                         "IL-10 -1082A/G" = "IL10 -1082A/G",
+                         "IL10 SNPs (rs1800890" = "IL10 rs1800890",
+                         "rs1800871" = "IL10 rs1800871",
+                         "rs1878672)" = "IL10 rs1878672",
+                         "IL10_rs1800872" = "IL10 rs1800872",
+                         
+                         "IL-13 (rs20541) polymorphism" = "IL13 rs20541",
+                         "IL-13 (rs20541)" = "IL13 rs20541",
+                         
+                         "IL-17A rs3819025" = "IL17A rs3819025",
+                         "IL-17F rs763780" = "IL17F rs763780",
+                         "IL-17 (rs2275913)" = "IL17A rs2275913",
+                         "IL-18 gene polymorphisms (-140 G allele)" = "IL18 -140 G allele",
+                         "IL-18 gene polymorphisms (-140 GG genotype)" = "IL18 -140 GG genotype",
+                         
+                         "CD14 (-159TT polymorphism)" = "CD14 -159TT",
+                         "CD14 (rs2569190)" = "CD14 rs2569190",
+
+                         "STAT3_rs4796793" = "STAT3 rs4796793",
+                         
+                         "TGFB1_rs1800469" = "TGFB1 rs1800469",
+                         
+                         "TLR4 SNP rs10759932" = "TLR4 rs10759932",
+                         
+                         "Chromosome 11q13.5 SNP (rs7927894)" = "Chromosome 11q13.5 rs7927894",
+                         "Chromosome 11q13.5 variant (rs7927894)" = "Chromosome 11q13.5 rs7927894",
+                         "rs7927894 variant" = "Chromosome 11q13.5 rs7927894"
+                         )
+
+# Recode only rows where Biomarker_type is "Genome"
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_name = case_when(
+    Biomarker_type == "Genome" ~ recode(Biomarker_name, !!!genome_replacements),
+    TRUE ~ Biomarker_name  # Keep the original value if Biomarker_type is not "Genome"
+  ))
+
+genome_table_studies <- studies_415_cleaned %>%
+  filter(Biomarker_type == "Genome")
+
+write.csv(genome_table_studies, "biomarker_tables/genome_table_studies.csv")
+```
+
+```{r}
+genome_table <- genome_table_studies %>%
+  count(Biomarker_name, sort = TRUE)
+
+genome_table <- genome_table %>%
+  filter(Biomarker_name != "Irrelevant")
+
+print(genome_table)
+
+write.csv(genome_table, "biomarker_tables/genome_table.csv")
+```
+
+Microbiome
+## by genus
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+microbiome_replacements <- c("Bacteroides species" = "Bacteroides",
+                             "Bacteroides fragilis" = "Bacteroides",
+                             "Demethylmenaquinone methyltransferase (DMM) in Bacteroides" = "Bacteroides",
+                             "Bacteroidetes in infant stool" = "Bacteroidetes",
+                             
+                             "Bifidobacteria" = "Bifidobacterium",
+                             "Bifidobacterium abundance" = "Bifidobacterium",
+                             "Bifidobacterium spp." = "Bifidobacterium",
+                             "Bifidobacterium bifidum" = "Bifidobacterium",
+                             "Bifidobacterium longum" = "Bifidobacterium",
+                             "Bifidobacterium longum subspecies infantis" = "Bifidobacterium",
+                             "Bifidobacterium pseudocatenulatum" = "Bifidobacterium",
+                             
+                             "Akkermansia muciniphila" = "Akkermansia",
+                             "Actinobacteria abundance" = "Actinobacteria",
+                             "Anaerostipes caccae" = "Anaerostipes",
+                             "Triosephosphate isomerase (TPI) in Bifidobacteriaceae (Alloscardovia)" = "Alloscardovia",
+                             
+                             "C. difficile" = "Clostridium",
+                             "Clostridium difficile" = "Clostridium",
+                             "Clostridium sensu stricto" = "Clostridium",
+                             "Clostridium sensu stricto 1" = "Clostridium",
+                             
+                             "Increased Candida abundance" = "Candida",
+                             
+                             "Clostridia taxa" = "Clostridia",
+                             "Corynebacterium simulans" = "Corynebacterium",
+                             
+                             "Eubacterium_xylanophilum_group" = "Eubacterium",
+                             "Eubacterium_xylanophilum_group (higher in AD group)" = "Eubacterium",
+                             "Eubacterium xylanophilum" = "Eubacterium",
+                             
+                             "Escherichia coli" = "Escherichia",
+                             "Enterobacteriaceae abundance" = "Enterobacteriaceae",
+                             
+                             "Prevotella melaninogenica" = "Prevotella",
+                             "Reduced Prevotella abundance" = "Prevotella",
+                             
+                             "Staphylococcus aureus" = "Staphylococcus",
+                             "Methicillin-resistant Staphylococcus aureus (MRSA)" = "Staphylococcus",
+                             "Methicillin-resistant Staphylococcus aureus (MRSA) colonization" = "Staphylococcus",
+                             "Staphylococcus aureus colonization" = "Staphylococcus",
+                             "Staphylococcus aureus (MRSA)" = "Staphylococcus",
+                             "Staphylococcus epidermidis" = "Staphylococcus",
+                             "Commensal staphylococci" = "Staphylococcus",
+                             "Methicillin-sensitive Staphylococcus aureus (MSSA)" = "Staphylococcus",
+                             
+                             "Staphylococcus aureus elastin-binding protein (ebp) gene" = "Staphylococcus",
+                             "Staphylococcus aureus superantigen gene selm" = "Staphylococcus",
+                             "Staphylococcus aureus superantigen gene seln" = "Staphylococcus",
+                             "Staphylococcus aureus virulence genes" = "Staphylococcus",
+                             "Staphylococcus hominis" = "Staphylococcus",
+                             
+                             "Streptococcus abundance" = "Streptococcus",
+                             
+                             "Lachnospiraceae family" = "Lachnospiraceae",
+                             
+                             "Phages (Siphoviridae" = "Siphoviridae",
+                             "Podoviridae)" = "Podoviridae",
+                             "Proteobacteria diversity" = "Proteobacteria",
+                             
+                             "Ruminococcus bromii" = "Ruminococcus",
+                             "Ruminococcus gnavus" = "Ruminococcus",
+                             "Ruminococcus_gauvreauii_group" = "Ruminococcus",
+                             "Ruminococcaceae abundance" = "Ruminococcaceae",
+                             
+                             "Tyzzerella nexilis" = "Tyzzerella",
+                             
+                             "Klebsiella oxytoca" = "Klebsiella",
+                             "Kocuria rhizophila" = "Kocuria",
+                             
+                             "Skin microbiome diversity" = "Irrelevant",
+                             "Skin microbiota diversity" = "Irrelevant",
+                             "Gut microbiome diversity (Reduced diversity)" = "Irrelevant",
+                             "Gut microbiota changes due to antibiotic exposure" = "Irrelevant",
+                             "Fecal calprotectin" = "Irrelevant",
+                             "Intestinal microbiota diversity" = "Irrelevant",
+                             "Microbiota diversity" = "Irrelevant"
+                         )
+
+# Recode only rows where Biomarker_type is "Microbiome"
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_name = case_when(
+    Biomarker_type == "Microbiome" ~ recode(Biomarker_name, !!!microbiome_replacements),
+    TRUE ~ Biomarker_name  # Keep the original value if Biomarker_type is not "Microbiome"
+  ))
+
+microbiome_table <- studies_415_cleaned %>%
+  filter(Biomarker_type == "Microbiome")
+
+microbiome_table <- microbiome_table %>%
+  count(Biomarker_name, sort = TRUE)
+
+microbiome_table <- microbiome_table %>%
+  filter(Biomarker_name != "Irrelevant")
+
+print(microbiome_table)
+
+write.csv(microbiome_table, "biomarker_tables/microbiome_table.csv")
+```
+
+Metabolome
+```{r}
+library(dplyr)
+# Define a named vector for recoding
+metabolome_replacements <- c("Arachidonic acid (AA)" = "Arachidonic acid",
+                             "Arachidonic acid (n-6 PUFA)" = "Arachidonic acid",
+                             "Breast milk 25-hydroxyvitamin D3" = "Vitamin D",
+                             "Cord blood perfluorooctanoic acid (PFOA)" = "Perfluorooctanoic acid",
+                             "Cord blood serum perfluorooctanoic acid (PFOA)" = "Perfluorooctanoic acid",
+                             "Dihomo-Î³-linolenic acid (DGLA)" = "Dihomo gamma-linolenic acid",
+                             "Docosapentaenoic acid (22:5n-3) (negatively associated with total serum IgE)" = "Docosapentaenoic acid",
+                             "Docosapentaenoic acid (n-3 PUFA)" = "Docosapentaenoic acid",
+                             "Leukotriene B4" = "Leukotrienes",
+                             "Linoleic acid (18:2n-6) (positively associated with specific IgE against cow's milk protein)" = "Linoleic acid",
+                             "Linoleic acid in cheek cells" = "Linoleic acid",
+                             "Maternal arachidonic acid (AA) levels" = "Arachidonic acid",
+                             "Serum vitamin D" = "Vitamin D",
+                             "Serum Vitamin D" = "Vitamin D",
+                             "Serum vitamin E (alpha-tocopherol)" = "Vitamin E",
+                             "Vitamin D (25(OH)D)" = "Vitamin D",
+                             "Vitamin D (25(OH)D3)" = "Vitamin D",
+                             "25-Hydroxyvitamin D3" = "Vitamin D",
+                             "Serum 25-hydroxyvitamin D" = "Vitamin D",
+                             "Vitamin C in breast milk" = "Vitamin C",
+                             
+                             "Lead and chromium levels in umbilical cord blood" = "Lead and chromium",
+                             "Maternal serum 25-hydroxyvitamin D" = "Vitamin D",
+                             "Urine monobenzyl phthalate (MBzP)" = "Monobenzyl phthalate",
+                             "Urine monobutyl phthalate (MBP)" = "Monobutyl phthalate",
+                             "Urine mono-(2-ethylhexyl) phthalate (MEHP)" = "Mono-(2-ethylhexyl) phthalate",
+                             
+                             "Cord blood cotinine levels" = "Cotinine",
+                             "Maternal blood cotinine levels" = "Cotinine",
+                             "Maternal serum folate levels" = "Folate",
+                             
+                             "Stearic acid in breast milk" = "Stearic acid",
+                             
+                             "Phenylalanine metabolism alterations" = "Phenylalanine",
+                             
+                             "Cord blood serum perfluorooctane sulfonate (PFOS)" = "Perfluorooctane sulfonate (PFOS)",
+                             
+                             "Maternal cow's milk intake" = "Irrelevant"
+                         )
+
+# Recode only rows where Biomarker_type is "Metabolome"
+studies_415_cleaned <- studies_415_cleaned %>%
+  mutate(Biomarker_name = case_when(
+    Biomarker_type == "Metabolome" ~ recode(Biomarker_name, !!!metabolome_replacements),
+    TRUE ~ Biomarker_name  # Keep the original value if Biomarker_type is not "Metabolome"
+  ))
+
+metabolome_table <- studies_415_cleaned %>%
+  filter(Biomarker_type == "Metabolome")
+
+metabolome_table <- metabolome_table %>%
+  count(Biomarker_name, sort = TRUE)
+
+metabolome_table <- metabolome_table %>%
+  filter(Biomarker_name != "Irrelevant")
+
+print(metabolome_table)
+
+write.csv(metabolome_table, "biomarker_tables/metabolome_table.csv")
+```
+
+save the cleaned csv file
+```{r}
+write.csv(studies_415_cleaned, "biomarker_tables/studies_415_cleaned.csv")
+```
+
+## read in csv file with the links
+```{r}
+studies_415_LINKS = read.csv("biomarker_tables/studies_415_LINKS.csv")
+```
+
+filter for duplicates
+```{r}
+studies_415_LINKS_unique <- studies_415_LINKS %>%
+  select(Study_title, Link) %>%
+  distinct()   # removes duplicate rows
+```
+
+```{r}
+studies_415_cleaned <- studies_415_cleaned %>%
+  filter(Biomarker_name != "Irrelevant")
+```
+
+### merge the links
+```{r}
+studies_415_cleaned_LINKS = left_join(studies_415_cleaned, studies_415_LINKS_unique, by = "Study_title")
+```
+
+```{r}
+library(dplyr)
+
+studies_415_cleaned_LINKS$Author_date <- sub("^((?:[^-]+-){1}[^-]+).*", "\\1", studies_415_cleaned_LINKS$PDF_file)
+
+
+studies_415_cleaned_LINKS <- studies_415_cleaned_LINKS %>%
+  # Remove unwanted columns
+  select(-PDF_file, -Biomarker_name_1) %>%
+  # Reorder so that "Link" becomes column 2
+  relocate(Link, .after = 1) %>%
+  relocate(Author_date, .before = 1)
+```
+
+```{r}
+write.csv(studies_415_cleaned_LINKS, "biomarker_tables/studies_415_cleaned_LINKS.csv")
+```
+
+### DATA VISUALISATIONS
+
+### Functions
+function to generate word cloud
+```{r}
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+
+# Define the function
+generate_wordcloud <- function(word_vector, min_freq = 1, max_words = 300, colors = "Dark2", my_scale = c(2,0.5)) {
+  
+  # Remove commas from the words
+  word_vector_cleaned <- gsub(",", "", word_vector)
+  
+  # Remove brackets
+  word_vector_cleaned <- gsub("[()]", "", word_vector_cleaned)
+  
+  # Convert to lowercase
+  word_vector_cleaned <- tolower(word_vector_cleaned)
+  
+  # Convert all spaces to underscores in the word vector
+  word_vector_cleaned <- gsub(" ", "_", word_vector_cleaned)  # Replace all spaces with underscores
+
+  # Specifically remove the phrase "not_specified"
+  word_vector_cleaned <- gsub("not_specified", "", word_vector_cleaned)
+  
+  # Specifically remove the word "irrelevant"
+  word_vector_cleaned <- gsub("irrelevant", "", word_vector_cleaned)
+  
+  # Convert to a corpus
+  corpus <- Corpus(VectorSource(word_vector_cleaned))
+  
+  # Text processing
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  corpus <- tm_map(corpus, stripWhitespace)
+  
+  # Create a term-document matrix
+  tdm <- TermDocumentMatrix(corpus)
+  m <- as.matrix(tdm)
+  word_freqs <- sort(rowSums(m), decreasing = TRUE)  # Get word frequencies
+  df <- data.frame(word = names(word_freqs), freq = word_freqs)  # Convert to dataframe
+  
+  # Print the frequency table of the top 3 words
+  top_3_words <- head(df[order(-df$freq), ], 3)
+  print("Top 3 words with their frequencies:")
+  print(top_3_words)
+  
+  # Generate word cloud
+  set.seed(1234)  # For reproducibility
+  wordcloud(words = df$word, freq = df$freq, min.freq = min_freq,
+            max.words = max_words, random.order = FALSE, rot.per = 0.35,
+            scale = my_scale,
+            colors = brewer.pal(8, colors))
+}
+```
+
+function to generate bar plot
+```{r}
+library(RColorBrewer)
+
+# Define the function to generate a colorful bar plot with larger labels
+generate_barplot_NEW <- function(column_name, name_of_plot,
+                             cex_names = 1,    # size of bar labels
+                             cex_axis = 1.1,
+                             cex_lab = 1.3,
+                             cex_main = 1.4,
+                             rotate_labels = TRUE # uses las=2 when TRUE
+                             ) {
+  # Count occurrences of values in the specified column
+  counts <- sort(table(column_name), decreasing = TRUE)
+  
+  # Print the frequency table of the top 3 groups
+  top_3_counts <- head(counts, 3)
+  print("Top 3 groups by frequency:")
+  print(top_3_counts)
+  
+  # Generate a color palette (adjust the number of colors based on the number of categories)
+  num_colors <- length(counts)
+  colors <- brewer.pal(min(num_colors, 9), "Set3")  # Use "Set3" for a colorful palette
+  
+  # Save current par and restore on exit
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par), add = TRUE)
+  
+  # Estimate a bottom margin that depends on the longest label and cex_names.
+  # This is heuristic: increase number if your labels are very long or cex_names large.
+  label_lengths <- nchar(names(counts))
+  max_label_len <- ifelse(length(label_lengths) == 0, 0, max(label_lengths))
+  # Heuristic scaling factor — adjust divisor (6) to change sensitivity
+  bottom_margin_lines <- max(6, ceiling((max_label_len * cex_names) / 6) * 1.5)
+  # par(mar) takes c(bottom, left, top, right)
+  par(mar = c(8, 5, 4, 2) + 0.1)
+  # Allow plotting outside the plot region so labels won't be clipped
+  par(xpd = NA)
+  
+  # Create the bar plot with larger labels
+  barplot(counts, 
+          col = colors,       # Apply colors from the palette
+          main = name_of_plot, 
+          ylab = "Count", 
+          las = ifelse(rotate_labels, 2, 1),  # 2 = perpendicular labels
+          cex.names = cex_names,    # size of category labels
+          cex.axis = cex_axis,      # size of axis numbers
+          cex.lab = cex_lab,        # size of axis labels
+          cex.main = cex_main,      # size of the main title
+          border = "white",
+          names.arg = names(counts))
+}
+```
+
+function to generate donut plot
+```{r}
+library(ggplot2)
+
+# Define the function to generate a donut plot with larger legend text
+generate_donutplot_NEW <- function(column_name, name_of_plot,
+                                   legend_text_size = 14,  # size of legend text
+                                   legend_title_size = 16, # size of legend title
+                                   title_size = 18) {      # size of plot title
+  
+  # Count occurrences of values in the specified column
+  counts <- sort(table(column_name), decreasing = TRUE)
+  counts_df <- data.frame(category = names(counts), count = as.integer(counts))
+  print(counts_df)
+  
+  # Compute percentages
+  counts_df$fraction <- counts_df$count / sum(counts_df$count)
+  
+  # Compute cumulative percentages
+  counts_df$ymax <- cumsum(counts_df$fraction)
+  counts_df$ymin <- c(0, head(counts_df$ymax, n = -1))
+  
+  # Make the donut plot
+  ggplot(counts_df, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = category)) +
+    geom_rect(color = "white") +
+    coord_polar(theta = "y") +
+    xlim(c(2, 4)) +
+    theme_void() +
+    labs(title = name_of_plot, fill = "Category") +
+    theme(
+      plot.title = element_text(hjust = 0.5, size = title_size, face = "bold"),
+      legend.title = element_text(size = legend_title_size, face = "bold"),
+      legend.text = element_text(size = legend_text_size)
+    )
+}
+```
+
+### Summary of studies ###
+Make unique dataframe (no duplicate rows of same study)
+```{r}
+library(dplyr)
+# Remove duplicates, keeping the first occurrence
+df_unique <- studies_415_cleaned %>% distinct(Study_title, .keep_all = TRUE)
+write.csv(df_unique,"df_unique.csv")
+```
+
+Year of publication
+```{r}
+hist(df_unique$Publication_year,
+     main = "Year of Publication, n=415",    # Title of the plot
+     xlab = "Year",  # X-axis label
+     ylab = "Number of Studies",
+     col = "skyblue",                 # Set color to skyblue
+     breaks = 20,                     # Set bin size
+     border = "white")                # Set the border color of the bars to white
+table(df_unique$Publication_year)
+```
+
+Country
+```{r}
+# split the terms by comma and flatten the list into a single vector
+country_split <- unlist(strsplit(as.character(df_unique$Country), ", "))
+table(country_split)
+generate_wordcloud(country_split)
+```
+
+Study design new
+```{r}
+# split the terms by comma and flatten the list into a single vector
+studydesign_split <- unlist(strsplit(as.character(df_unique$Study_design), ", "))
+table(studydesign_split)
+generate_donutplot_NEW(studydesign_split, "Study design, n=415")
+```
+
+Statistical methods
+```{r}
+# split the terms by comma and flatten the list into a single vector
+methods_split <- unlist(strsplit(as.character(df_unique$Statistical_methods), ", "))
+table(methods_split)
+generate_wordcloud(methods_split, min_freq = 1, max_words = 100)
+```
+
+Sequencing methods
+```{r}
+# split the terms by comma and flatten the list into a single vector
+seqmethods_split <- unlist(strsplit(as.character(df_unique$Sequencing_methods), ", "))
+table(seqmethods_split)
+generate_wordcloud(seqmethods_split)
+```
+
+Sequencing platforms
+```{r}
+# split the terms by comma and flatten the list into a single vector
+seqplatform_split <- unlist(strsplit(as.character(df_unique$Sequencing_platforms), ", "))
+
+table(seqplatform_split)
+generate_wordcloud(seqplatform_split)
+```
+
+### Summary of biomarkers ###
+
+Biomarker type
+```{r}
+# split the terms by comma and flatten the list into a single vector
+biomarkertype_split <- unlist(strsplit(as.character(studies_415_cleaned$Biomarker_type), ", "))
+table(biomarkertype_split)
+generate_barplot_NEW(biomarkertype_split, "Type of Biomarkers, n=852")
+```
+
+Site of biomarker
+```{r}
+# split the terms by comma and flatten the list into a single vector
+biomarkersite_split <- unlist(strsplit(as.character(studies_415_cleaned$Biomarker_site), ", "))
+table(biomarkersite_split)
+generate_donutplot_NEW(biomarkersite_split, "Site of Biomarkers, n=852")
+```
+
+Immunome
+```{r}
+## filter by immunome
+studies_immunome <- studies_415_cleaned[studies_415_cleaned$Biomarker_type == "Immunome", ]
+## drop those with frequency 0
+immunome_split <- droplevels(factor(studies_immunome$Biomarker_name))
+table(immunome_split)
+generate_wordcloud(immunome_split, min_freq = 1)
+```
+
+Genome
+```{r}
+## filter by Genome
+studies_genome <- studies_415_cleaned[studies_415_cleaned$Biomarker_type == "Genome", ]
+## drop those with frequency 0
+genome_split <- droplevels(factor(studies_genome$Biomarker_name))
+table(genome_split)
+generate_wordcloud(genome_split, "Genome Biomarkers", min_freq = 1)
+```
+
+Microbiome
+```{r}
+## filter by microbiome
+studies_microbiome <- studies_415_cleaned[studies_415_cleaned$Biomarker_type == "Microbiome", ]
+## drop those with frequency 0
+microbiome_split <- droplevels(factor(studies_microbiome$Biomarker_name))
+table(microbiome_split)
+generate_wordcloud(microbiome_split, "Microbiome Biomarkers", min_freq = 1)
+```
+
+Metabolome
+```{r}
+## filter by metabolome
+studies_metabolome <- studies_415_cleaned[studies_415_cleaned$Biomarker_type == "Metabolome", ]
+## drop those with frequency 0
+metabolome_split <- droplevels(factor(studies_metabolome$Biomarker_name))
+table(metabolome_split)
+generate_wordcloud(metabolome_split, "Metabolome Biomarkers", min_freq = 1, my_scale=c(1.5,0.5))
+```
+
+###########################################################################################
